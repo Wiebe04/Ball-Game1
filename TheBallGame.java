@@ -29,7 +29,9 @@ import javafx.scene.input.*;
 
 public class TheBallGame extends Application
 {
+   //2d array of game panes
    GamePane[][] board = new GamePane[4][4];
+   //Text box at the top of the game
    Label topLabel = new Label();
    
    public void start(Stage stage)
@@ -42,20 +44,21 @@ public class TheBallGame extends Application
       GridPane gp = new GridPane();
       gp.setPrefSize(400,400);     
       
-      //adds each gamepane into the center gridpane
+      //fills board with gamepanes
       for(int i=0;i<4;i++)
       {
          for(int j=0;j<4;j++)
          {
-            GamePane piece = new GamePane(i,j);
-            piece.draw();
+            GamePane piece = new GamePane();
+            piece.draw();//use draw method on each piece to make sure buttons and circles are drawn correctly
             gp.add(piece,i,j);
             board[i][j]=piece; 
          }
       }
       
+      //set piece at (0,2) to be invisible off start
       board[0][2].setVisible(false);
-      moveability(board);
+      moveability(board);//ensures that each button will appear in the right instances
       
       //hbox and vbox to create spacing
       VBox leftBox = new VBox();
@@ -67,6 +70,7 @@ public class TheBallGame extends Application
       rightBox.setPrefSize(50,600);
       bottomBox.setPrefSize(600,100);
       
+      //label will say the number of balls and moves that you start with
       topLabel.setText("Balls left: "+15+"   Possible Moves: "+2);
       
       //Label alignment
@@ -86,12 +90,10 @@ public class TheBallGame extends Application
       stage.setTitle("The Ball Game");
       stage.show();
    }
-    
+   
+   //Class for each ball and button 
    public class GamePane extends GridPane
    {
-      private int x;
-      private int y;
-      
       //canvas for circle        
       private Canvas circleCanvas = new Canvas(80,80);
       private GraphicsContext gc = circleCanvas.getGraphicsContext2D();
@@ -102,15 +104,13 @@ public class TheBallGame extends Application
       private Button leftB = new Button();
       private Button rightB = new Button(); 
  
-      public GamePane(int x, int y) 
+      //GamePane constructor
+      public GamePane() 
       {
          //super for gridpane
          super();
          
-         this.x=x;
-         this.y=y;
-         
-         
+         //creates a black oval 
          gc.setFill(Color.BLACK);
          gc.fillOval(0,0,80,80);
          
@@ -127,6 +127,7 @@ public class TheBallGame extends Application
          add(rightB,1,2);
          add(circleCanvas,1,1);
          
+         //makes each button do something 
          topB.setOnAction(new GameHandler());
          bottomB.setOnAction(new GameHandler());
          leftB.setOnAction(new GameHandler());
@@ -269,11 +270,13 @@ public class TheBallGame extends Application
       {
          for(int j=0;j<4;j++)
           {
+            //ints for the possible hopping positions
             int left=j-2;
             int right=j+2;
             int up=i-2;
             int down=i+2;
-               
+              
+            //if there is a jumpable space to the left, a button will be visible on the opposite side   
             if(left>-1)
             {
                if(board[i][left].isVisible()==false && board[i][j-1].isVisible()==true && board[i][j].isVisible()==true)
@@ -285,6 +288,7 @@ public class TheBallGame extends Application
                   board[i][j].getRight().setVisible(false); 
                }
             }
+            //if there is a jumpable space to the right, a button will be visible on the opposite side 
             if(right<4)
             {
                if(board[i][right].isVisible()==false && board[i][j+1].isVisible()==true && board[i][j].isVisible()==true)
@@ -296,6 +300,7 @@ public class TheBallGame extends Application
                   board[i][j].getLeft().setVisible(false); 
                }
             }
+            //if there is a jumpable space above, a button will be visible on the opposite side 
             if(up>-1)
             {
                if(board[up][j].isVisible()==false && board[i-1][j].isVisible()==true && board[i][j].isVisible()==true)
@@ -307,6 +312,7 @@ public class TheBallGame extends Application
                   board[i][j].getBottom().setVisible(false); 
                }
             }
+            //if there is a jumpable space below, a button will be visible on the opposite side 
             if(down<4)
             {
                if(board[down][j].isVisible()==false && board[i+1][j].isVisible()==true && board[i][j].isVisible()==true)
@@ -323,6 +329,7 @@ public class TheBallGame extends Application
          
    }//end of moveability
 
+   //members to track number of balls and moves available
    private int moveCount = 0;
    private int ballCount = 15;
    
@@ -331,25 +338,30 @@ public class TheBallGame extends Application
    {
       public void handle(ActionEvent e) 
       {
+         //loops throught the board, checking if each button is pressed
          for(int i=0;i<4;i++)
          {
             for(int j=0;j<4;j++)
             {
+               //if top button is pressed
                if(board[i][j].getTop() == e.getSource())
                {
                   click(board[i][j].getTop());
-                  ballCount--;
+                  ballCount--;//subtract ball count on each because a ball will always be lost
                }
+               //if bottom button is pressed
                if(board[i][j].getBottom() == e.getSource())
                {
                   click(board[i][j].getBottom());
                   ballCount--;
                }
+               //if top right is pressed
                if(board[i][j].getRight() == e.getSource())
                {
                   click(board[i][j].getRight());
                   ballCount--;
                }
+               //if top left is pressed
                if(board[i][j].getLeft() == e.getSource())
                {
                   click(board[i][j].getLeft());
@@ -357,6 +369,8 @@ public class TheBallGame extends Application
                }
             }
          }
+         
+         //loops through the board, counting the number of buttons visible
          for(int i=0;i<4;i++)
          {
             for(int j=0;j<4;j++)
@@ -386,10 +400,12 @@ public class TheBallGame extends Application
          {
             topLabel.setText("YOU WIN!!!");
          }
+         //if moves are zero but there is more than 1 ball
          else if(moveCount == 0)
          {
             topLabel.setText("YOU LOSE!!!");
          }
+         //displays ball count and move count by default
          else
          {
             topLabel.setText("Balls left: "+ballCount+"   Possible Moves: "+moveCount);
@@ -399,17 +415,20 @@ public class TheBallGame extends Application
       }
    }//end of GameHandler
    
+   //when buttons are clicked
    public void  click(Button clicked)
    {
+      //loops through board to check if buttons are clicked
       for(int i=0;i<4;i++)
       {
             for(int j=0;j<4;j++)
             {
+               //for each button clicked
                if(clicked == board[i][j].getTop())
                {
-                  board[i][j].setVisible(false);
-                  board[i+1][j].setVisible(false);
-                  board[i+2][j].setVisible(true);
+                  board[i][j].setVisible(false);//button clicked disappears
+                  board[i+1][j].setVisible(false);//button jumped disappears
+                  board[i+2][j].setVisible(true);//spot jumped to is visible
                }
                if(clicked == board[i][j].getBottom())
                {
@@ -430,6 +449,7 @@ public class TheBallGame extends Application
                   board[i][j+2].setVisible(true);
 
                }
+               //makes moveability updating 
                for(int x=0;x<4;x++)
                {
                   for(int y=0;y<4;y++)
